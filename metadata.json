@@ -1,0 +1,6 @@
+{
+  "name": "SETU - Societal Innovation Collaboration Portal",
+  "description": "Smart India Hackathon 2026 platform for crowdsourcing societal challenges and facilitating collaborative problem solving across citizens, Government of Jharkhand, universities, students, and industry.",
+  "requestFramePermissions": ["camera", "microphone", "geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
