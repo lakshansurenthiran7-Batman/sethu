@@ -1,40 +1,18 @@
-/**
- * @license
- * SPDX-License-Identifier: Apache-2.0
- */
-
 import express from 'express';
-import path from 'path';
-import dotenv from 'dotenv';
-import { createServer as createViteServer } from 'vite';
-import { db } from './server/db.js';
+import { db } from './db.js';
 import {
   analyzeChallengeAI,
   transcribeAudioAI,
   queryMapsGroundingAI,
   chatWithGeminiAI,
   analyzeLiveCameraFrameAI
-} from './server/aiService.js';
-import { reverseGeocodeLocation, searchPlacesLocation } from './server/mapsService.js';
+} from './aiService.js';
+import { reverseGeocodeLocation, searchPlacesLocation } from './mapsService.js';
 
-dotenv.config();
 
-const DEFAULT_KEY = 'AQ.Ab8RN6KbhT--IK4VL_qAAYwhsZpyRodamdzXpPyAdG05p93VAQ';
-if (!process.env.GEMINI_API_KEY) {
-  process.env.GEMINI_API_KEY = DEFAULT_KEY;
-}
-if (!process.env.GOOGLE_MAPS_API_KEY) {
-  process.env.GOOGLE_MAPS_API_KEY = DEFAULT_KEY;
-}
-if (!process.env.VITE_GOOGLE_MAPS_API_KEY) {
-  process.env.VITE_GOOGLE_MAPS_API_KEY = DEFAULT_KEY;
-}
-
+export function createApp() {
 const app = express();
-const PORT = 3000;
-
-app.use(express.json({ limit: '15mb' }));
-
+app.use(express.json({ limit: '5mb' }));
 // Health Check
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', app: 'SETU', time: new Date().toISOString() });
@@ -811,25 +789,7 @@ app.post('/api/demo/reset', (_req, res) => {
   res.json(result);
 });
 
-// Start Server with Vite Middleware
-async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa'
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (_req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
-  }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`SETU Full-Stack Platform running on http://0.0.0.0:${PORT}`);
-  });
+app.use('/api', (_req, res) => res.status(404).json({ error: 'API route not found' }));
+return app;
 }
-
-startServer();

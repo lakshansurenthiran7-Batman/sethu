@@ -22,11 +22,13 @@ import { LiveCameraCapture } from './components/LiveCameraCapture.js';
 import { APIProvider } from '@vis.gl/react-google-maps';
 
 const GOOGLE_MAPS_API_KEY =
-  (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY ||
-  'AQ.Ab8RN6KbhT--IK4VL_qAAYwhsZpyRodamdzXpPyAdG05p93VAQ';
+  (import.meta as any).env?.VITE_GOOGLE_MAPS_API_KEY || '';
 
 function MainApp() {
   const {
+    dataError,
+    refreshData,
+    isLoading,
     currentView,
     selectedChallengeId,
     setSelectedChallengeId,
@@ -53,6 +55,15 @@ function MainApp() {
 
       {/* SIH 2026 17-Step Demo Scenario Walkthrough Bar */}
       <DemoScenarioBar />
+
+      {dataError && (
+        <div role="alert" className="mx-4 my-4 flex items-center justify-between gap-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950">
+          <span>{dataError}</span>
+          <button type="button" onClick={() => refreshData()} disabled={isLoading} className="font-semibold underline disabled:opacity-50">
+            {isLoading ? 'Loading…' : 'Try again'}
+          </button>
+        </div>
+      )}
 
       {/* Active Main Portal View */}
       <main className="flex-1 pb-12">
