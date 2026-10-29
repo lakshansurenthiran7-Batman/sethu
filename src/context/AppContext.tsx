@@ -42,6 +42,7 @@ interface AppContextType {
   auditLogs: AuditLogItem[];
   analytics: DashboardAnalytics | null;
   isLoading: boolean;
+  dataError: string | null;
   selectedChallengeId: string | null;
   setSelectedChallengeId: (id: string | null) => void;
   selectedProjectId: string | null;
@@ -102,6 +103,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLogItem[]>([]);
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [dataError, setDataError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [selectedChallengeId, setSelectedChallengeId] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -117,6 +119,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const refreshData = async () => {
     setIsLoading(true);
+    setDataError(null);
     try {
       const [chRes, prRes, depRes, unRes, notifRes, audRes, anRes] = await Promise.all([
         fetch('/api/challenges'),
@@ -127,6 +130,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         fetch('/api/audit-logs'),
         fetch('/api/analytics')
       ]);
+
+      if ([chRes, prRes, depRes, unRes, notifRes, audRes, anRes].some(res => !res.ok)) {
+        throw new Error('Unable to load portal data');
+      }
 
       const [chData, prData, depData, unData, notifData, audData, anData] = await Promise.all([
         chRes.json(),
@@ -146,7 +153,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (audData.logs) setAuditLogs(audData.logs);
       if (anData.analytics) setAnalytics(anData.analytics);
     } catch (err) {
-      console.error('Failed to load SETU data:', err);
+      setDataError('Portal data could not be loaded. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -423,6 +430,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         auditLogs,
         analytics,
         isLoading,
+        dataError,
         selectedChallengeId,
         setSelectedChallengeId,
         selectedProjectId,

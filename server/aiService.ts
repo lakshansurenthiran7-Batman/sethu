@@ -31,7 +31,7 @@ function isQuotaExceededError(err: any): boolean {
 }
 
 function getGenAI(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6KbhT--IK4VL_qAAYwhsZpyRodamdzXpPyAdG05p93VAQ';
+  const apiKey = process.env.GEMINI_API_KEY || '';
   if (!apiKey) {
     return null;
   }

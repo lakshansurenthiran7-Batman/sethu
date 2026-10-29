@@ -11,7 +11,7 @@ let genAIInstance: GoogleGenAI | null = null;
 let geminiQuotaCooldownUntil = 0;
 
 function getGenAI(): GoogleGenAI | null {
-  const apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6KbhT--IK4VL_qAAYwhsZpyRodamdzXpPyAdG05p93VAQ';
+  const apiKey = process.env.GEMINI_API_KEY || '';
   if (!apiKey) {
     return null;
   }
@@ -96,7 +96,7 @@ export async function reverseGeocodeLocation(lat: number, lng: number): Promise<
     return { ...cached, lat, lng };
   }
 
-  const gMapsKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY || 'AQ.Ab8RN6KbhT--IK4VL_qAAYwhsZpyRodamdzXpPyAdG05p93VAQ';
+  const gMapsKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
   // 1. Try Google Maps Geocoding REST API if key is present
   if (gMapsKey) {
@@ -318,7 +318,7 @@ export async function searchPlacesLocation(query: string, districtHint?: string)
     return placesCache.get(cacheKey)!;
   }
 
-  const gMapsKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY || 'AQ.Ab8RN6KbhT--IK4VL_qAAYwhsZpyRodamdzXpPyAdG05p93VAQ';
+  const gMapsKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
   // 1. Try Google Places Text Search if key is available
   if (gMapsKey) {

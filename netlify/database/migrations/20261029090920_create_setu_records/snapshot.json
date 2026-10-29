@@ -1,0 +1,67 @@
+{
+  "version": "8",
+  "dialect": "postgres",
+  "id": "c0ffbac9-a81d-485b-97f5-1a47f8975697",
+  "prevIds": [
+    "00000000-0000-0000-0000-000000000000"
+  ],
+  "ddl": [
+    {
+      "isRlsEnabled": false,
+      "name": "setu_records",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "setu_records"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "setu_records"
+    },
+    {
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "data",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "setu_records"
+    },
+    {
+      "columns": [
+        "collection",
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "setu_records_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "setu_records"
+    }
+  ],
+  "renames": []
+}

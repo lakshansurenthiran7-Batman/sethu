@@ -3,8 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import fs from 'fs';
-import path from 'path';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import {
   User,
   Challenge,
@@ -32,7 +31,7 @@ import {
 } from '../src/data/mockSeedData.js';
 import { departmentDirectoryDb } from './departmentDirectoryDb.js';
 
-interface DBState {
+export interface DBState {
   users: User[];
   challenges: Challenge[];
   departments: JharkhandDepartment[];
@@ -42,68 +41,17 @@ interface DBState {
   auditLogs: AuditLogItem[];
 }
 
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DB_FILE = path.join(DATA_DIR, 'setu_store.json');
+export class DatabaseService {
+  constructor(private state: DBState = createInitialState()) {}
 
-class DatabaseService {
-  private state: DBState;
+  public snapshot(): DBState { return this.state; }
+  public getDirectoryEntries() { return this.state.departments; }
 
-  constructor() {
-    this.state = this.loadOrInitialize();
-  }
-
-  private loadOrInitialize(): DBState {
-    try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      }
-
-      if (fs.existsSync(DB_FILE)) {
-        const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        const parsed = JSON.parse(raw);
-        if (parsed.challenges && parsed.departments) {
-          return parsed;
-        }
-      }
-    } catch (e) {
-      console.warn('Could not read existing DB file, seeding defaults:', e);
-    }
-
-    const initialState: DBState = {
-      users: [...DEMO_USERS],
-      challenges: [...DEMO_CHALLENGES],
-      departments: [...JHARKHAND_DEPARTMENT_DIRECTORY],
-      universities: [...DEMO_UNIVERSITIES],
-      projects: [...DEMO_PROJECTS],
-      notifications: [...DEMO_NOTIFICATIONS],
-      auditLogs: [...DEMO_AUDIT_LOGS]
-    };
-
-    this.saveState(initialState);
-    return initialState;
-  }
-
-  private saveState(state: DBState) {
-    try {
-      if (!fs.existsSync(DATA_DIR)) {
-        fs.mkdirSync(DATA_DIR, { recursive: true });
-      }
-      fs.writeFileSync(DB_FILE, JSON.stringify(state, null, 2), 'utf-8');
-    } catch (err) {
-      console.error('Failed to write db to disk:', err);
-    }
-  }
+  // Mutations are committed together by the request's database transaction.
+  private saveState(_state: DBState) {}
 
   public resetDemoData() {
-    this.state = {
-      users: [...DEMO_USERS],
-      challenges: [...DEMO_CHALLENGES],
-      departments: [...JHARKHAND_DEPARTMENT_DIRECTORY],
-      universities: [...DEMO_UNIVERSITIES],
-      projects: [...DEMO_PROJECTS],
-      notifications: [...DEMO_NOTIFICATIONS],
-      auditLogs: [...DEMO_AUDIT_LOGS]
-    };
+    this.state = createInitialState();
     this.saveState(this.state);
     return { success: true, message: 'SETU Demo Data successfully reset to initial baseline' };
   }
@@ -837,4 +785,20 @@ class DatabaseService {
   }
 }
 
-export const db = new DatabaseService();
+export function createInitialState(): DBState {
+  return structuredClone({
+    users: DEMO_USERS, challenges: DEMO_CHALLENGES,
+    departments: JHARKHAND_DEPARTMENT_DIRECTORY, universities: DEMO_UNIVERSITIES,
+    projects: DEMO_PROJECTS, notifications: DEMO_NOTIFICATIONS, auditLogs: DEMO_AUDIT_LOGS
+  });
+}
+
+export const requestDatabase = new AsyncLocalStorage<DatabaseService>();
+export const db = new Proxy({} as DatabaseService, {
+  get(_target, property) {
+    const service = requestDatabase.getStore();
+    if (!service) throw new Error('Database accessed outside a request transaction');
+    const value = Reflect.get(service, property);
+    return typeof value === 'function' ? value.bind(service) : value;
+  }
+});
